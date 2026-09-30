@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrailCraft — Wilderness Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<style>
+  :root {
+    --forest-deep: #122118;
+    --forest-mid: #193024;
+    --forest-surface: #203b2c;
+    --forest-card: #254433;
+    --cedar-gold: #e76f51;
+    --cedar-hover: #f4a261;
+    --alpine-snow: #f4f7f4;
+    --sage-muted: #9db2a3;
+    --border-subtle: rgba(255, 255, 255, 0.09);
+    --border-accent: rgba(82, 183, 136, 0.35);
+    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1e382b 0%, var(--forest-deep) 100%);
+    color: var(--alpine-snow);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* --- Top App Header --- */
+  header {
+    background: rgba(16, 28, 21, 0.96);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.8rem 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  .brand-icon {
+    background: linear-gradient(135deg, #e76f51, #f4a261);
+    color: #fff;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(231, 111, 81, 0.35);
+  }
+  .brand-info h1 {
+    margin: 0;
+    font-size: 1.18rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .brand-info p {
+    margin: 0;
+    font-size: 0.76rem;
+    color: var(--sage-muted);
+    font-weight: 500;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  .export-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    color: var(--alpine-snow);
+    padding: 0.42rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .export-btn:hover {
+    background: rgba(231, 111, 81, 0.2);
+    border-color: var(--cedar-gold);
+    color: #fff;
+  }
+
+  /* --- Dashboard Feed Container --- */
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 1.4rem;
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    scroll-behavior: smooth;
+  }
+
+  /* --- Empty State / Discover --- */
+  .trail-hero {
+    margin-top: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--sage-muted);
+    max-width: 600px;
+    line-height: 1.6;
+    margin: 0 0 2rem 0;
+  }
+  .tag-shelf {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.7rem;
+    max-width: 800px;
+  }
+  .trail-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #d6e2da;
+    padding: 0.6rem 1rem;
+    border-radius: 24px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .trail-chip:hover {
+    background: rgba(231, 111, 81, 0.15);
+    border-color: rgba(231, 111, 81, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  /* --- Data Reports (Replacing Chat Bubbles) --- */
+  .route-report {
+    background: rgba(25, 48, 36, 0.85);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 1.8rem;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .query-badge {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cedar-gold);
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(231, 111, 81, 0.2);
+  }
+  .report-content {
+    line-height: 1.65;
+    font-size: 1rem;
+    color: var(--alpine-snow);
+  }
+  .report-content strong { color: #ffe6a7; }
+  .report-content code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.18rem 0.4rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: #f4a261;
+  }
+  
+  /* Loading Skeleton */
+  .loading-pulse {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #8be0a4;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 1rem 0;
+  }
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(139, 224, 164, 0.3);
+    border-top-color: #8be0a4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  /* --- Route HUD & Metrics Banner --- */
+  .route-hud {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    background: rgba(12, 22, 16, 0.6);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .hud-stat {
+    display: flex;
+    flex-direction: column;
+  }
+  .hud-stat .hud-label {
+    font-size: 0.75rem;
+    color: var(--sage-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .hud-stat .hud-val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffe5a3;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.25rem;
+  }
+
+  /* --- Action Buttons --- */
+  .action-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-accent);
+    color: #fff;
+    text-decoration: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+  }
+  .action-btn:hover {
+    background: #386641;
+    border-color: #52b788;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* --- Command / Search Bar Footer --- */
+  footer {
+    background: rgba(16, 28, 21, 0.96);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border-subtle);
+    padding: 1rem 1.6rem 1.5rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .action-bar-container {
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+  }
+  .action-bar-container::-webkit-scrollbar { height: 4px; }
+  .action-bar-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+  
+  .action-chip {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--sage-muted);
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .action-chip:hover {
+    background: rgba(82, 183, 136, 0.15);
+    border-color: rgba(82, 183, 136, 0.4);
+    color: #fff;
+  }
+
+  form {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 0.4rem;
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  form:focus-within {
+    border-color: #52b788;
+    box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+  }
+  input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+  }
+  input::placeholder {
+    color: #5d7565;
+  }
+  button {
+    padding: 0.8rem 1.4rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--cedar-gold);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  button:hover {
+    background: var(--cedar-hover);
+    box-shadow: 0 0 15px rgba(231, 111, 81, 0.4);
+  }
+
+  /* Print Styles */
+  @media print {
+    body { background: #fff !important; color: #000 !important; height: auto !important; overflow: visible !important; font-size: 11pt !important; }
+    header, footer, .trail-hero, .query-badge, .action-btn-row { display: none !important; }
+    #log { max-width: 100% !important; padding: 0 !important; overflow: visible !important; display: block !important; }
+    .route-report { background: #fff !important; color: #000 !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 2rem !important; page-break-inside: avoid; }
+    .report-content { color: #000 !important; line-height: 1.5; white-space: pre-wrap; }
+    
+    /* Better markdown formatting for print */
+    .report-content h1, .report-content h2, .report-content h3 { margin-top: 1.2em; margin-bottom: 0.5em; page-break-after: avoid; }
+    .report-content p, .report-content ul, .report-content ol { margin-bottom: 0.8em; }
+    .report-content li { margin-bottom: 0.3em; }
+    
+    .route-hud { background: #f8f9fa !important; border: 1px solid #ddd !important; margin-bottom: 1.5rem !important; display: flex !important; flex-wrap: wrap !important; }
+    .hud-stat { flex: 1 1 auto !important; min-width: 120px !important; }
+    .hud-stat .hud-val, .report-content strong { color: #000 !important; }
+    .material-symbols-outlined { color: #555 !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">⛰️</div>
+    <div class="brand-info">
+      <h1>TrailCraft</h1>
+      <p>Your smart backcountry trip planner</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="export-btn" onclick="saveOfflineTripSheet()" title="Export or print offline-ready trip plan">
+      <span class="material-symbols-outlined" style="font-size:1.15rem;">download</span>
+      <span>Save Offline PDF</span>
+    </button>
+  </div>
+</header>
+
+<div id="log">
+  <div class="trail-hero" id="hero-state">
+    <div class="hero-title">Plan your next outdoor adventure.</div>
+    <p class="hero-desc">
+      TrailCraft makes it easy to prepare for Washington's wilderness. Just tell us what you want to do—whether it's finding a route, checking live mountain weather, calculating your pack weight, or downloading offline maps.
+    </p>
+    <div class="tag-shelf">
+      <div class="trail-chip" onclick="quickPrompt('Plan an ultralight 2-day trek to The Enchantments.')">
+        <span class="material-symbols-outlined" style="font-size:1.1rem">terrain</span>
+        The Enchantments
+      </div>
+      <div class="trail-chip" onclick="quickPrompt('Give me permit guidance and offline map links for the Wonderland Trail.')">
+        <span class="material-symbols-outlined" style="font-size:1.1rem">map</span>
+        Wonderland Trail
+      </div>
+      <div class="trail-chip" onclick="quickPrompt('Compare calorie density and price of macadamia nuts vs peanut butter.')">
+        <span class="material-symbols-outlined" style="font-size:1.1rem">scale</span>
+        Snack Metrics
+      </div>
+      <div class="trail-chip" onclick="quickPrompt('Show me a high-resolution preview photograph of Colchuck Lake.')">
+        <span class="material-symbols-outlined" style="font-size:1.1rem">image</span>
+        Trail Camera
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="action-bar-container">
+    <div class="action-chip" onclick="injectAction('Check live alpine weather, freezing levels, and wind gusts for ')">
+      <span class="material-symbols-outlined" style="font-size:1rem">thermostat</span>
+      <span>Check Weather</span>
+    </div>
+    <div class="action-chip" onclick="injectAction('Calculate pack weight, no-cook calories, and water refill points for ')">
+      <span class="material-symbols-outlined" style="font-size:1rem">backpack</span>
+      <span>Calculate Pack Weight</span>
+    </div>
+    <div class="action-chip" onclick="injectAction('Get trailhead Google Maps driving directions and offline CalTopo GPX for ')">
+      <span class="material-symbols-outlined" style="font-size:1rem">explore</span>
+      <span>Get Offline Maps</span>
+    </div>
+    <div class="action-chip" onclick="injectAction('Look up permit quotas and Recreation.gov lottery rules for ')">
+      <span class="material-symbols-outlined" style="font-size:1rem">confirmation_number</span>
+      <span>Permit Rules</span>
+    </div>
+  </div>
+
+  <form id="form">
+    <input id="input" placeholder="Try: 'Plan a 2-day hike to The Enchantments'..." autocomplete="off" autofocus>
+    <button>
+      <span class="material-symbols-outlined">search</span>
+    </button>
+  </form>
+</footer>
+
+<script>
+const log = document.getElementById("log");
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+const heroState = document.getElementById("hero-state");
+
+// Remove hero state once a search begins
+function clearHero() {
+  if (heroState) {
+    heroState.style.display = 'none';
+  }
+}
+
+function quickPrompt(text) {
+  input.value = text;
+  form.dispatchEvent(new Event("submit"));
+}
+
+function injectAction(prefix) {
+  input.value = prefix;
+  input.focus();
+}
+
+function saveOfflineTripSheet() {
+  window.print();
+}
+
+function el(tag, cls, text) { 
+  const e = document.createElement(tag); 
+  if (cls) e.className = cls; 
+  if (text != null) e.textContent = text; 
+  return e; 
+}
+
+// Replaces the old chat bubble logic with a "Data Report Card"
+function createReportCard(queryText) {
+  clearHero();
+  const card = el("div", "route-report");
+  
+  const badge = el("div", "query-badge");
+  badge.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.1rem;">manage_search</span> <span>${queryText}</span>`;
+  card.appendChild(badge);
+  
+  const content = el("div", "report-content");
+  card.appendChild(content);
+  
+  log.appendChild(card);
+  log.scrollTop = log.scrollHeight;
+  return content;
+}
+
+// Scans text for route metrics and renders HUD
+function injectRouteHudIfDetected(text, container) {
+  // Look specifically for hike/trail distance to avoid matching driving distance (e.g. "55 miles from Seattle")
+  const distMatch = text.match(/(?:hike|trail|round-trip)?\s*distance:\s*~?(\d+(\.\d+)?)\s*(miles|mi\b)/i) || text.match(/(\d+(\.\d+)?)\s*(miles|mi\b)/i);
+  const elevMatch = text.match(/(\d{1,3}(,\d{3})*|\d+)\s*(feet|ft\b|\' gain)/i);
+  const weightMatch = text.match(/(\d+(\.\d+)?)\s*(lbs|pounds|lb\b)/i);
+  
+  // Look for hydration amounts (e.g., "2-3 liters", "1.5L", "2 gallons")
+  const waterMatch = text.match(/(\d+(?:\.\d+)?(?:(?:-|–| to )\d+(?:\.\d+)?)?)\s*(liters?|L\b|gallons?|gal\b)/i);
+
+  if (distMatch || elevMatch || weightMatch || waterMatch) {
+    const hud = el("div", "route-hud");
+    
+    if (distMatch) {
+      hud.innerHTML += `
+        <div class="hud-stat">
+          <span class="hud-label"><span class="material-symbols-outlined" style="font-size:1rem;">straighten</span> Distance</span>
+          <span class="hud-val">${distMatch[1]} mi</span>
+        </div>`;
+    }
+    if (elevMatch) {
+      hud.innerHTML += `
+        <div class="hud-stat">
+          <span class="hud-label"><span class="material-symbols-outlined" style="font-size:1rem;">landscape</span> Gain</span>
+          <span class="hud-val">+${elevMatch[1]} ft</span>
+        </div>`;
+    }
+    if (weightMatch) {
+      hud.innerHTML += `
+        <div class="hud-stat">
+          <span class="hud-label"><span class="material-symbols-outlined" style="font-size:1rem;">weight</span> Base Weight</span>
+          <span class="hud-val">${weightMatch[1]} lbs</span>
+        </div>`;
+    }
+    if (waterMatch) {
+      const unit = waterMatch[2].toLowerCase().startsWith('l') ? 'L' : 'gal';
+      hud.innerHTML += `
+        <div class="hud-stat">
+          <span class="hud-label"><span class="material-symbols-outlined" style="font-size:1rem;">water_drop</span> Hydration</span>
+          <span class="hud-val">${waterMatch[1]} ${unit}</span>
+        </div>`;
+    }
+    
+    container.appendChild(hud);
+  }
+}
+
+// Scans for links to generate action buttons
+function injectActionButtons(text, container) {
+  const gmapsMatch = text.match(/(https:\/\/(www\.)?google\.com\/maps[^\s\)]+)/i);
+  const caltopoMatch = text.match(/(https:\/\/caltopo\.com[^\s\)]+)/i);
+  const gcsImgMatch = text.match(/(https:\/\/storage\.googleapis\.com\/[^\s\)]+\.jpg)/i);
+
+  if (gmapsMatch || caltopoMatch || gcsImgMatch) {
+    const row = el("div", "action-btn-row");
+    if (caltopoMatch) {
+      row.innerHTML += `
+        <a href="${caltopoMatch[1]}" target="_blank" class="action-btn">
+          <span class="material-symbols-outlined" style="font-size:1.2rem; color:#8be0a4;">download</span>
+          Download GPX Track
+        </a>`;
+    }
+    if (gmapsMatch) {
+      row.innerHTML += `
+        <a href="${gmapsMatch[1]}" target="_blank" class="action-btn">
+          <span class="material-symbols-outlined" style="font-size:1.2rem; color:#f4a261;">near_me</span>
+          Open in Maps
+        </a>`;
+    }
+    if (gcsImgMatch) {
+      row.innerHTML += `
+        <a href="${gcsImgMatch[1]}" target="_blank" class="action-btn">
+          <span class="material-symbols-outlined" style="font-size:1.2rem; color:#fff;">fullscreen</span>
+          View Full Image
+        </a>`;
+    }
+    container.appendChild(row);
+  }
+}
+
+function renderReply(container, parts) {
+  container.textContent = "";
+  const texts = parts.filter(p => p && (p.kind === "text" || (!p.kind && p.text))).map(p => p.text || "");
+  const textStr = texts.join("\n").trim();
+  
+  if (textStr) {
+    injectRouteHudIfDetected(textStr, container);
+    
+    // Very basic markdown to HTML for better readability and printing
+    let formattedText = textStr
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/### (.*?)\n/g, '<h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #ffe6a7;">$1</h3>\n')
+      .replace(/#### (.*?)\n/g, '<h4 style="margin-top: 0.8rem; margin-bottom: 0.4rem; color: #f4a261;">$1</h4>\n')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n\* /g, '<br>• ');
+      
+    const contentDiv = el("div", null);
+    contentDiv.innerHTML = formattedText;
+    
+    container.appendChild(contentDiv);
+    injectActionButtons(textStr, container);
+  } else {
+    container.textContent = "(No data retrieved)";
+  }
+  log.scrollTop = log.scrollHeight;
+}
+
+form.addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  
+  input.value = "";
+  input.blur();
+  
+  // Create App-like report card instead of a chat bubble
+  const reportContainer = createReportCard(text);
+  
+  // Tactical loading state
+  reportContainer.innerHTML = `
+    <div class="loading-pulse">
+      <div class="loading-spinner"></div>
+      Retrieving topography & field telemetry...
+    </div>
+  `;
+  
+  try {
+    const res = await fetch("/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error(`Server returned non-JSON. ${raw.slice(0, 300)}`); }
+    renderReply(reportContainer, data.parts || []);
+  } catch (e) {
+    reportContainer.innerHTML = `<span style="color:#e76f51;">Error retrieving data: ${e.message}</span>`;
+  }
+});
+</script>
+</body>
+</html>
